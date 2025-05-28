@@ -85,39 +85,73 @@ int ratelimit(struct xdp_md *ctx)
         bpf_map_update_elem(&ip_port_pair_rl, &source_ip, &ip_value, BPF_ANY);
     }
     */
+
     // Rate limit check for IP + Port pair
     __u64 *ipp_value = bpf_map_lookup_elem(&ip_port_pair_rl, &ipp);
     __u64 new_ipp_val;
 
-    if (ipp_value) {
+    if (ipp_value)
+    {
         new_ipp_val = *ipp_value + 1;
-    } else {
+    } else
+    {
         new_ipp_val = 1;
     }
 
-    if (new_ipp_val > MAX_RATE_LIMIT) {
+    if (new_ipp_val > MAX_RATE_LIMIT)
+    {
         return XDP_DROP;
     }
 
-    bpf_map_update_elem(&ip_port_pair_rl, &ipp, &new_ipp_val, BPF_ANY);
+    bpf_map_update_elem(&ip_port_pair_rl, &ipp, &new_ipp_val, BPF_EXIST);
 
     // Rate limit check for source IP only
     __u64 *ip_value = bpf_map_lookup_elem(&ips_rl, &source_ip);
     __u64 new_ip_val;
 
-    if (ip_value) {
+    if (ip_value)
+    {
         new_ip_val = *ip_value + 1;
-    } else {
+    } else
+    {
         new_ip_val = 1;
     }
 
-    if (new_ip_val > MAX_RATE_LIMIT) {
+    if (new_ip_val > MAX_RATE_LIMIT)
+    {
         return XDP_DROP;
     }
 
-    bpf_map_update_elem(&ips_rl, &source_ip, &new_ip_val, BPF_ANY);
+    bpf_map_update_elem(&ips_rl, &source_ip, &new_ip_val, BPF_EXIST);
 
 
+    /*
+	__u64 *ipp_value = bpf_map_lookup_elem(&ip_port_pair_rl, &ipp);
+	if (ipp_value)
+    {
+    	__u64 new_ipp_val = *ipp_value + 1;
+
+    	if (new_ipp_val > MAX_RATE_LIMIT)
+        {
+        	return XDP_DROP;
+    	}
+
+    	bpf_map_update_elem(&ip_port_pair_rl, &ipp, &new_ipp_val, BPF_EXIST);
+	}
+
+	__u64 *ip_value = bpf_map_lookup_elem(&ips_rl, &source_ip);
+	if (ip_value)
+    {
+    	__u64 new_ip_val = *ip_value + 1;
+
+    	if (new_ip_val > MAX_RATE_LIMIT)
+        {
+        	return XDP_DROP;
+    	}
+
+    	bpf_map_update_elem(&ips_rl, &source_ip, &new_ip_val, BPF_EXIST);
+	}
+	*/
     return XDP_PASS;
 }
 

@@ -33,7 +33,7 @@ void *parse_ip_port_pair(void *arg)
     {
         const char *source_ip_str = json_string_value(json_object_get(value, "source_ip"));
         int destination_port_int = json_integer_value(json_object_get(value, "destination_port"));
-        int allow = json_integer_value(json_object_get(value, "allow"));
+        int rate = json_integer_value(json_object_get(value, "rate"));
 
         struct ip_port_pair ipp;
 
@@ -45,10 +45,10 @@ void *parse_ip_port_pair(void *arg)
 
         ipp.destination_port = htons(destination_port_int);
 
-        printf("[ip_port_pair] src_ip=%d port=%d allow=%d\n",
-               ipp.source_ip, ipp.destination_port, allow);
+        printf("[ip_port_pair] src_ip=%d port=%d rate=%d\n",
+               ipp.source_ip, ipp.destination_port, rate);
 
-        state = bpf_map_update_elem(ipp_fd, &ipp, &allow, BPF_ANY);
+        state = bpf_map_update_elem(ipp_fd, &ipp, &rate, BPF_ANY);
 
         if (state < 0)
         {
@@ -73,7 +73,7 @@ void *parse_source_ips(void *arg)
     json_array_foreach(array, index, value)
     {
         const char *source_ip_str = json_string_value(json_object_get(value, "source_ip"));
-        int allow = json_integer_value(json_object_get(value, "allow"));
+        int rate = json_integer_value(json_object_get(value, "rate"));
 
         __be32 source_ip;
 
@@ -83,9 +83,9 @@ void *parse_source_ips(void *arg)
             continue;
         }
 
-        printf("[source_ip] src_ip=%d allow=%d\n", source_ip, allow);
+        printf("[source_ip] src_ip=%d rate=%d\n", source_ip, rate);
 
-        state = bpf_map_update_elem(ipsrl_fd, &source_ip, &allow, BPF_ANY);
+        state = bpf_map_update_elem(ipsrl_fd, &source_ip, &rate, BPF_ANY);
 
         if (state < 0)
         {

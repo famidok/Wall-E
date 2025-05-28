@@ -4,7 +4,7 @@
 
 #define MAX_ENTRIES 100
 #define MAX_FIELD 64
-#define CONFIG_PATH "../src/data/blacklist_config.json"
+#define CONFIG_PATH "../data/blacklist_config.json"
 
 void write_json_array(FILE *fp, const char *key, int fields, const char *field_names[]) {
     char buffer[fields][MAX_FIELD];

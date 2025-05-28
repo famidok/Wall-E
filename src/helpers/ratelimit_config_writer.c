@@ -3,12 +3,12 @@
 #include <string.h>
 
 #define MAX_FIELD 64
-#define CONFIG_PATH "../src/data/ratelimit_config.json"
+#define CONFIG_PATH "../data/ratelimit_config.json"
 
 void write_ip_port_pair(FILE *fp) {
     char source_ip[MAX_FIELD];
     char port[MAX_FIELD];
-    char allow[MAX_FIELD];
+    char rate[MAX_FIELD];
 
     fprintf(fp, "  \"ip_port_pair\": [\n");
 
@@ -22,12 +22,13 @@ void write_ip_port_pair(FILE *fp) {
         fgets(port, sizeof(port), stdin);
         port[strcspn(port, "\n")] = 0;
 
-        printf("allow (0 or 1): ");
-        fgets(allow, sizeof(allow), stdin);
-        allow[strcspn(allow, "\n")] = 0;
+        printf("rate (default 0): ");
+        fgets(rate, sizeof(rate), stdin);
+        rate[strcspn(rate, "\n")] = 0;
+        if (strlen(rate) == 0) strcpy(rate, "0");
 
         if (!first) fprintf(fp, ",\n");
-        fprintf(fp, "    {\"source_ip\": \"%s\", \"port\": %s, \"allow\": %s}", source_ip, port, allow);
+        fprintf(fp, "    {\"source_ip\": \"%s\", \"port\": %s, \"rate\": %s}", source_ip, port, rate);
         first = 0;
 
         char more[4];
@@ -41,9 +42,9 @@ void write_ip_port_pair(FILE *fp) {
 
 void write_source_ips(FILE *fp) {
     char source_ip[MAX_FIELD];
-    char allow[MAX_FIELD];
+    char rate[MAX_FIELD];
 
-    fprintf(fp, ",\n  \"source_ips\": [\n");
+    fprintf(fp, "  \"source_ips\": [\n");
 
     int first = 1;
     while (1) {
@@ -51,12 +52,13 @@ void write_source_ips(FILE *fp) {
         fgets(source_ip, sizeof(source_ip), stdin);
         source_ip[strcspn(source_ip, "\n")] = 0;
 
-        printf("allow (0 or 1): ");
-        fgets(allow, sizeof(allow), stdin);
-        allow[strcspn(allow, "\n")] = 0;
+        printf("rate (default 0): ");
+        fgets(rate, sizeof(rate), stdin);
+        rate[strcspn(rate, "\n")] = 0;
+        if (strlen(rate) == 0) strcpy(rate, "0");
 
         if (!first) fprintf(fp, ",\n");
-        fprintf(fp, "    {\"source_ip\": \"%s\", \"allow\": %s}", source_ip, allow);
+        fprintf(fp, "    {\"source_ip\": \"%s\", \"rate\": %s}", source_ip, rate);
         first = 0;
 
         char more[4];
@@ -100,8 +102,24 @@ int main(void) {
     }
 
     fprintf(fp, "{\n");
-    write_ip_port_pair(fp);
-    write_source_ips(fp);
+
+    int first = 1;
+    char answer[4];
+
+    printf("Do you want to add entries for 'ip_port_pair'? (y/n): ");
+    fgets(answer, sizeof(answer), stdin);
+    if (answer[0] == 'y' || answer[0] == 'Y') {
+        write_ip_port_pair(fp);
+        first = 0;
+    }
+
+    printf("Do you want to add entries for 'source_ips'? (y/n): ");
+    fgets(answer, sizeof(answer), stdin);
+    if (answer[0] == 'y' || answer[0] == 'Y') {
+        if (!first) fprintf(fp, ",\n");
+        write_source_ips(fp);
+    }
+
     fprintf(fp, "\n}\n");
     fclose(fp);
 
