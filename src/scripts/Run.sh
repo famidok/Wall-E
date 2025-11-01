@@ -1,7 +1,11 @@
 #!/bin/bash
 
+INTERFACES=$(ls /sys/class/net)
+
 read -p "Which application do you want to run? (blacklist/ratelimit/both): " APP
+echo -e "Interfaces List: \n$INTERFACES"
 read -p "Enter the interface name (e.g., enp0s1): " IFACE
+
 
 # Run the Makefile first
 echo "Running make from ../../Makefile..."
